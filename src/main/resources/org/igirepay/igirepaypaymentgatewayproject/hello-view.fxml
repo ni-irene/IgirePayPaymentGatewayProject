@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="org.igirepay.igirepaypaymentgatewayproject.HelloController"
+           style="-fx-background-color: #f0f4f8;">
+
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <VBox fx:id="loginScreen" spacing="15" alignment="CENTER" style="-fx-padding: 80;">
+
+        <Label text="IgirePay Payment Gateway"
+               style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+
+        <VBox spacing="12" style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10;
+              -fx-effect: dropshadow(gaussian, #ccc, 10, 0, 0, 2);" maxWidth="380">
+
+            <Label text="Login to Your Account"
+                   style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+            <Label text="Customer ID:"/>
+            <TextField fx:id="loginIdField" promptText="Enter your Customer ID"/>
+
+            <Label text="PIN:"/>
+            <PasswordField fx:id="loginPinField" promptText="Enter your 5-digit PIN"/>
+
+            <Label fx:id="loginMessage" style="-fx-text-fill: red; -fx-font-size: 12px;" wrapText="true"/>
+
+            <Button text="Login" onAction="#onLogin" maxWidth="Infinity"
+                    style="-fx-background-color: #1a237e; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-padding: 10; -fx-font-size: 14px;"/>
+        </VBox>
+    </VBox>
+
+    <!-- ==================== CUSTOMER DASHBOARD ==================== -->
+    <BorderPane fx:id="customerScreen" visible="false" style="-fx-background-color: #f0f4f8;">
+
+        <top>
+            <HBox style="-fx-background-color: #1a237e; -fx-padding: 12 20;" alignment="CENTER_LEFT" spacing="10">
+                <Label text="IgirePay" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <Label fx:id="customerWelcomeLabel" style="-fx-text-fill: #a5d6a7; -fx-font-size: 13px;"/>
+                <Button text="Logout" onAction="#onLogout"
+                        style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-size: 12px;"/>
+            </HBox>
+        </top>
+
+        <center>
+            <TabPane style="-fx-padding: 10;">
+
+                <!-- My Accounts -->
+                <Tab text="My Accounts" closable="false">
+                    <VBox spacing="10" style="-fx-padding: 15;">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label fx:id="walletBalanceLabel"
+                                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1a237e;"/>
+                            <Label fx:id="savingsBalanceLabel"
+                                   style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;"/>
+                        </HBox>
+                        <TableView fx:id="myAccountsTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="myAccId" text="ID" prefWidth="60"/>
+                                <TableColumn fx:id="myAccType" text="Type" prefWidth="120"/>
+                                <TableColumn fx:id="myAccBalance" text="Balance (RWF)" prefWidth="160"/>
+                                <TableColumn fx:id="myAccCreated" text="Created At" prefWidth="180"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+
+                <!-- Deposit -->
+                <Tab text="Deposit" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="420">
+                        <Label text="Deposit to Wallet" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="Amount (RWF):"/>
+                        <TextField fx:id="depAmountField" promptText="Enter amount"/>
+                        <Label text="Reference ID:"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="depRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenDepRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Button text="Deposit" onAction="#onDeposit" maxWidth="Infinity"
+                                style="-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                        <Label fx:id="depMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+                <!-- Withdraw -->
+                <Tab text="Withdraw" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="420">
+                        <Label text="Withdraw from Wallet" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="Amount (RWF):"/>
+                        <TextField fx:id="withAmountField" promptText="Enter amount"/>
+                        <Label text="Reference ID:"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="withRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenWithRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Button text="Withdraw" onAction="#onWithdraw" maxWidth="Infinity"
+                                style="-fx-background-color: #f57c00; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                        <Label fx:id="withMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+                <!-- Transfer -->
+                <Tab text="Transfer" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="420">
+                        <Label text="Transfer to Another Customer" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="Recipient Customer ID:"/>
+                        <TextField fx:id="transferToCustomerIdField" promptText="Recipient Customer ID"/>
+                        <Label text="Amount (RWF):"/>
+                        <TextField fx:id="transferAmountField" promptText="Enter amount"/>
+                        <Label text="Reference ID:"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="transferRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenTransferRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Button text="Transfer" onAction="#onTransfer" maxWidth="Infinity"
+                                style="-fx-background-color: #1a237e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                        <Label fx:id="transferMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+                <!-- Savings -->
+                <Tab text="Savings" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="420">
+                        <Label text="Savings Account Operations" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="Amount (RWF):"/>
+                        <TextField fx:id="savingsAmountField" promptText="Enter amount"/>
+                        <Label text="Reference ID:"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="savingsRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenSavingsRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <HBox spacing="10">
+                            <Button text="Push to Savings" onAction="#onPushToSavings" HBox.hgrow="ALWAYS"
+                                    style="-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                            <Button text="Pull from Savings" onAction="#onPullFromSavings" HBox.hgrow="ALWAYS"
+                                    style="-fx-background-color: #f57c00; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                        </HBox>
+                        <Label fx:id="savingsMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+                <!-- Buy Airtime -->
+                <Tab text="Buy Airtime" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="420">
+                        <Label text="Buy Airtime" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="Phone Number:"/>
+                        <TextField fx:id="airtimePhoneField" promptText="e.g. 07XXXXXXXX"/>
+                        <Label text="Amount (RWF):"/>
+                        <TextField fx:id="airtimeAmountField" promptText="Enter amount"/>
+                        <Label text="Reference ID:"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="airtimeRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenAirtimeRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Button text="Buy Airtime" onAction="#onBuyAirtime" maxWidth="Infinity"
+                                style="-fx-background-color: #6a1b9a; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                        <Label fx:id="airtimeMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+                <!-- My Transactions -->
+                <Tab text="My Transactions" closable="false">
+                    <VBox spacing="10" style="-fx-padding: 15;">
+                        <TableView fx:id="myTransactionsTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="myTxId" text="ID" prefWidth="55"/>
+                                <TableColumn fx:id="myTxAccountId" text="Account ID" prefWidth="90"/>
+                                <TableColumn fx:id="myTxRef" text="Reference ID" prefWidth="180"/>
+                                <TableColumn fx:id="myTxType" text="Type" prefWidth="140"/>
+                                <TableColumn fx:id="myTxAmount" text="Amount (RWF)" prefWidth="130"/>
+                                <TableColumn fx:id="myTxDate" text="Date" prefWidth="180"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+
+                <!-- Loan -->
+                <Tab text="💰 Loan" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="480">
+                        <Label text="Savings Account Loan" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+
+                        <!-- Loan eligibility info -->
+                        <HBox spacing="10" alignment="CENTER_LEFT"
+                              style="-fx-background-color: #e8f5e9; -fx-padding: 10; -fx-background-radius: 6;">
+                            <Label text="Your Loan Limit:"
+                                   style="-fx-font-weight: bold;"/>
+                            <Label fx:id="loanLimitLabel"
+                                   style="-fx-font-weight: bold; -fx-text-fill: #2e7d32; -fx-font-size: 14px;"/>
+                            <Button text="Check Limit" onAction="#onCheckLoanLimit"
+                                    style="-fx-background-color: #2e7d32; -fx-text-fill: white;"/>
+                        </HBox>
+
+                        <!-- Active loan status -->
+                        <VBox fx:id="activeLoanBox" spacing="4"
+                              style="-fx-background-color: #fff3e0; -fx-padding: 10; -fx-background-radius: 6;">
+                            <Label text="Active Loan Status" style="-fx-font-weight: bold; -fx-text-fill: #e65100;"/>
+                            <Label fx:id="activeLoanAmountLabel" style="-fx-text-fill: #bf360c;"/>
+                            <Label fx:id="activeLoanPaidLabel" style="-fx-text-fill: #bf360c;"/>
+                            <Label fx:id="activeLoanRemainingLabel" style="-fx-text-fill: #bf360c;"/>
+                            <Label fx:id="activeLoanDueLabel" style="-fx-text-fill: #bf360c;"/>
+                        </VBox>
+
+                        <Separator/>
+
+                        <!-- Take Loan -->
+                        <Label text="Take a Loan" style="-fx-font-weight: bold;"/>
+                        <Label text="Loan Amount (RWF):"/>
+                        <TextField fx:id="loanAmountField" promptText="Enter loan amount"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="loanRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenLoanRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Button text="Take Loan" onAction="#onTakeLoan" maxWidth="Infinity"
+                                style="-fx-background-color: #1565c0; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+
+                        <Separator/>
+
+                        <!-- Repay Loan -->
+                        <Label text="Repay Loan" style="-fx-font-weight: bold;"/>
+                        <Label text="Repayment Amount (RWF):"/>
+                        <TextField fx:id="loanRepayAmountField" promptText="Enter repayment amount"/>
+                        <HBox spacing="8">
+                            <TextField fx:id="loanRepayRefField" promptText="Reference ID" HBox.hgrow="ALWAYS"/>
+                            <Button text="Generate" onAction="#onGenRepayRef"
+                                    style="-fx-background-color: #546e7a; -fx-text-fill: white;"/>
+                        </HBox>
+                        <Button text="Repay Loan" onAction="#onRepayLoan" maxWidth="Infinity"
+                                style="-fx-background-color: #e65100; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+
+                        <Label fx:id="loanMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+                <!-- Change PIN -->
+                <Tab text="Change PIN" closable="false">
+                    <VBox spacing="12" style="-fx-padding: 30;" maxWidth="420">
+                        <Label text="Change PIN" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                        <Label text="Current PIN:"/>
+                        <PasswordField fx:id="custCurrentPinField" promptText="Current PIN"/>
+                        <Label text="New PIN (5 digits):"/>
+                        <PasswordField fx:id="custNewPinField" promptText="New PIN"/>
+                        <Button text="Change PIN" onAction="#onCustomerChangePIN" maxWidth="Infinity"
+                                style="-fx-background-color: #1a237e; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;"/>
+                        <Label fx:id="custPinMessage" style="-fx-font-size: 13px;" wrapText="true"/>
+                    </VBox>
+                </Tab>
+
+            </TabPane>
+        </center>
+    </BorderPane>
+
+    <!-- ==================== ADMIN DASHBOARD ==================== -->
+    <BorderPane fx:id="adminScreen" visible="false" style="-fx-background-color: #f0f4f8;">
+
+        <top>
+            <HBox style="-fx-background-color: #b71c1c; -fx-padding: 12 20;" alignment="CENTER_LEFT" spacing="10">
+                <Label text="IgirePay — Admin Panel"
+                       style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <Label fx:id="adminStatusLabel" style="-fx-text-fill: #ffcdd2; -fx-font-size: 13px;"/>
+                <Button text="Logout" onAction="#onLogout"
+                        style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-size: 12px;"/>
+            </HBox>
+        </top>
+
+        <center>
+            <TabPane style="-fx-padding: 10;">
+
+                <!-- All Customers -->
+                <Tab text="All Customers" closable="false">
+                    <VBox spacing="10" style="-fx-padding: 15;">
+
+                        <TitledPane text="Register / Update / Delete Customer" expanded="false">
+                            <GridPane hgap="10" vgap="8" style="-fx-padding: 10;">
+                                <Label text="Full Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminCustNameField" promptText="Full Name"
+                                           GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="200"/>
+                                <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminCustEmailField" promptText="Email"
+                                           GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="Phone:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminCustPhoneField" promptText="Phone"
+                                           GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <Label text="PIN (5 digits):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <PasswordField fx:id="adminCustPinField" promptText="PIN"
+                                              GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                <Label text="Role:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="adminRoleCombo" GridPane.rowIndex="4" GridPane.columnIndex="1" prefWidth="200"/>
+                                <Label text="Customer ID (update/delete):" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminCustIdField" promptText="ID"
+                                           GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                                <HBox spacing="10" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                                    <Button text="Register" onAction="#onAdminRegisterCustomer"
+                                            style="-fx-background-color: #1a237e; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                    <Button text="Update" onAction="#onAdminUpdateCustomer"
+                                            style="-fx-background-color: #f57c00; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                    <Button text="Delete" onAction="#onAdminDeleteCustomer"
+                                            style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                    <Button text="Lock" onAction="#onAdminLockCustomer"
+                                            style="-fx-background-color: #37474f; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                    <Button text="Unlock" onAction="#onAdminUnlockCustomer"
+                                            style="-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                </HBox>
+                                <Label fx:id="adminCustMessage" style="-fx-text-fill: green;"
+                                       GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+                            </GridPane>
+                        </TitledPane>
+
+                        <TableView fx:id="adminCustomersTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="adminColCustId" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="adminColCustName" text="Full Name" prefWidth="160"/>
+                                <TableColumn fx:id="adminColCustEmail" text="Email" prefWidth="180"/>
+                                <TableColumn fx:id="adminColCustPhone" text="Phone" prefWidth="130"/>
+                                <TableColumn fx:id="adminColCustRole" text="Role" prefWidth="90"/>
+                                <TableColumn fx:id="adminColCustLocked" text="Locked" prefWidth="70"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+
+                <!-- All Accounts -->
+                <Tab text="All Accounts" closable="false">
+                    <VBox spacing="10" style="-fx-padding: 15;">
+
+                        <TitledPane text="Create / Delete Account" expanded="false">
+                            <GridPane hgap="10" vgap="8" style="-fx-padding: 10;">
+                                <Label text="Customer ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminAccCustIdField" promptText="Customer ID"
+                                           GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="200"/>
+                                <Label text="Account Type:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="adminAccTypeCombo" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="200"/>
+                                <Label text="Initial Balance:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminAccBalanceField" promptText="Balance"
+                                           GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <Label text="Account ID (delete):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <TextField fx:id="adminAccIdField" promptText="Account ID"
+                                           GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                <HBox spacing="10" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                                    <Button text="Create Account" onAction="#onAdminCreateAccount"
+                                            style="-fx-background-color: #1a237e; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                    <Button text="Delete Account" onAction="#onAdminDeleteAccount"
+                                            style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                                </HBox>
+                                <Label fx:id="adminAccMessage" style="-fx-text-fill: green;"
+                                       GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+                            </GridPane>
+                        </TitledPane>
+
+                        <TableView fx:id="adminAccountsTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="adminColAccId" text="ID" prefWidth="60"/>
+                                <TableColumn fx:id="adminColAccCustId" text="Customer ID" prefWidth="100"/>
+                                <TableColumn fx:id="adminColAccType" text="Type" prefWidth="120"/>
+                                <TableColumn fx:id="adminColAccBalance" text="Balance (RWF)" prefWidth="150"/>
+                                <TableColumn fx:id="adminColAccCreated" text="Created At" prefWidth="180"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+
+                <!-- All Transactions -->
+                <Tab text="All Transactions" closable="false">
+                    <VBox spacing="10" style="-fx-padding: 15;">
+                        <TableView fx:id="adminTransactionsTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="adminColTxId" text="ID" prefWidth="55"/>
+                                <TableColumn fx:id="adminColTxAccId" text="Account ID" prefWidth="90"/>
+                                <TableColumn fx:id="adminColTxRef" text="Reference ID" prefWidth="180"/>
+                                <TableColumn fx:id="adminColTxType" text="Type" prefWidth="150"/>
+                                <TableColumn fx:id="adminColTxAmount" text="Amount (RWF)" prefWidth="130"/>
+                                <TableColumn fx:id="adminColTxDate" text="Date" prefWidth="180"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+
+                <!-- Reports -->
+                <Tab text="Reports" closable="false">
+                    <VBox spacing="15" style="-fx-padding: 20;">
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label text="CSV File Path:"/>
+                            <TextField fx:id="adminCsvPathField" promptText="e.g. transactions.csv" prefWidth="300"/>
+                            <Button text="Export to CSV" onAction="#onAdminExportCSV"
+                                    style="-fx-background-color: #1a237e; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        </HBox>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Button text="Daily Summary" onAction="#onAdminDailySummary"
+                                    style="-fx-background-color: #f57c00; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        </HBox>
+                        <TextArea fx:id="adminReportArea" VBox.vgrow="ALWAYS" editable="false"
+                                  style="-fx-font-family: monospace; -fx-font-size: 13px;"
+                                  promptText="Report output will appear here..."/>
+                    </VBox>
+                </Tab>
+
+            </TabPane>
+        </center>
+    </BorderPane>
+
+</StackPane>
