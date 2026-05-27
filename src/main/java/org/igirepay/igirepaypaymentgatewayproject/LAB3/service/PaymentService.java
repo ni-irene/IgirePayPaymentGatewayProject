@@ -10,6 +10,10 @@ import org.igirepay.igirepaypaymentgatewayproject.LAB3.exception.InsufficientBal
 import org.igirepay.igirepaypaymentgatewayproject.LAB3.exception.InvalidAmountException;
 import org.igirepay.igirepaypaymentgatewayproject.LAB3.exception.LoanException;
 
+/**
+ * Core payment service handling all financial operations.
+ * Validates amounts, checks for duplicates, and enforces business rules.
+ */
 public class PaymentService {
 
     private final AccountDAOImpl accountDAO;
