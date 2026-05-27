@@ -2,7 +2,7 @@
 -- Run once: psql -U postgres -d igirepay -f schema.sql
 
 -- ─── Customers ───────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS customers (
+CREATE TABLE customers (
     id               SERIAL PRIMARY KEY,
     full_name        VARCHAR(100)        NOT NULL,
     email            VARCHAR(100)        UNIQUE,
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 
 -- ─── Accounts ────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS accounts (
+CREATE TABLE accounts (
     id               SERIAL PRIMARY KEY,
     customer_id      INT                 NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     account_type     VARCHAR(20)         NOT NULL CHECK (account_type IN ('Wallet','Savings')),
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 );
 
 -- ─── Transactions ─────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS transactions (
+CREATE TABLE transactions (
     id               SERIAL PRIMARY KEY,
     account_id       INT                 NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     reference_id     VARCHAR(100)        NOT NULL,
@@ -34,14 +34,14 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 -- ─── Processed Requests (idempotency) ────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS processed_requests (
+CREATE TABLE processed_requests (
     id               SERIAL PRIMARY KEY,
     reference_id     VARCHAR(100)        NOT NULL UNIQUE,
     processed_at     TIMESTAMP           NOT NULL DEFAULT NOW()
 );
 
 -- ─── Loans ───────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS loans (
+CREATE TABLE loans (
     id                  SERIAL PRIMARY KEY,
     customer_id         INT             NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
     savings_account_id  INT             NOT NULL REFERENCES accounts(id),
