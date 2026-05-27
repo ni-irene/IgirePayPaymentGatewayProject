@@ -1,5 +1,9 @@
 package org.igirepay.igirepaypaymentgatewayproject.LAB1.model;
 
+/**
+ * Base class representing a bank account.
+ * Extended by SavingsAccount and WalletAccount.
+ */
 public class Account {
 
         protected int id;
