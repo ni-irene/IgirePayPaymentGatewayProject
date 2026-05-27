@@ -3,6 +3,10 @@ package org.igirepay.igirepaypaymentgatewayproject.LAB2.util;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
+/**
+ * Utility class for establishing a PostgreSQL database connection.
+ * Uses JDBC DriverManager to connect to the igirepay database.
+ */
 public class DBConnection {
 
 
