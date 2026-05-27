@@ -1,61 +1,88 @@
 # IgirePay Payment Gateway Project
 
 ## Project Description
-IgirePay Payment Gateway Project is a Java Maven application designed to simulate a payment gateway system with customer management, transaction handling, reporting, and service modules.
+IgirePay Payment Gateway Project is a Java Maven application designed to simulate a payment gateway system with customer management, transaction handling, loan management, reporting, and a JavaFX user interface.
 
 ---
 
-# Technologies Used
+## Technologies Used
 
-- Java
+- Java 17
 - Maven
 - PostgreSQL
+- JavaFX
 - IntelliJ IDEA
 - Git & GitHub
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```text
 src/main/java/org/igirepay/igirepaypaymentgatewayproject/
 
 ├── LAB1
-│   ├── models
+│   ├── model
+│   │   ├── Account.java
+│   │   ├── SavingsAccount.java
+│   │   ├── WalletAccount.java
+│   │   ├── Customer.java
+│   │   ├── Transaction.java
+│   │   └── Loan.java
 │   └── service
+│       └── TransactionService.java
 │
 ├── LAB2
 │   ├── dao
+│   │   ├── AccountDAO.java
+│   │   ├── CustomerDAO.java
+│   │   ├── TransactionDAO.java
+│   │   ├── LoanDAO.java
+│   │   └── ProcessedRequestDAO.java
 │   ├── daoImpl
+│   │   ├── AccountDAOImpl.java
+│   │   ├── CustomerDAOImpl.java
+│   │   ├── TransactionDAOImpl.java
+│   │   ├── LoanDAOImpl.java
+│   │   └── ProcessedRequestDAOImpl.java
 │   └── util
+│       └── DBConnection.java
 │
 ├── LAB3
-│   ├── exceptions
-│   ├── reports
-│   └── paymentservice
+│   ├── exception
+│   │   ├── InvalidAmountException.java
+│   │   ├── InsufficientBalanceException.java
+│   │   ├── DuplicateTransactionException.java
+│   │   └── LoanException.java
+│   ├── report
+│   │   └── ReportService.java
+│   └── service
+│       └── PaymentService.java
+│
+├── HelloApplication.java
+├── HelloController.java
+└── Main.java
 ```
 
 ---
 
-# Git/GitHub Collaboration Workflow
+## Git/GitHub Collaboration Workflow
 
 This project demonstrates Git and GitHub collaboration workflows as required in Exercise 3.5.
 
-## Implemented Requirements
+---
 
 ### 1. Feature Branches
-Feature branches were created to develop functionalities independently.
+Feature branches were created to develop each lab independently.
 
-Examples:
-
-- feature/customer-management
-- feature/transaction-module
-- feature/report-service
+- `feature/lab1-models` — Core domain models and TransactionService
+- `feature/lab2-dao` — DAO interfaces, implementations and DBConnection
+- `feature/lab3-services` — Exceptions, PaymentService, ReportService and JavaFX UI
 
 ---
 
 ### 2. Pull Requests
-Feature branches are merged into the main branch using Pull Requests on GitHub.
+Each feature branch was pushed to GitHub and merged into `main` using Pull Requests.
 
 ---
 
@@ -65,61 +92,56 @@ Merge conflicts were simulated and resolved successfully during branch merging.
 ---
 
 ### 4. Clean Commit History
-Meaningful commit messages were maintained throughout development.
-
-Example commit messages:
 
 ```bash
-Initial project setup
-Add customer registration functionality
-Implement transaction DAO
-Create report generation module
-Resolve merge conflict in Main.java
+Initial empty commit
+chore: Add project setup (pom.xml, Maven wrapper, module-info, schema)
+LAB1: Add core domain models - Account, SavingsAccount, WalletAccount, Customer, Transaction, Loan, TransactionService
+Merge feature/lab1-models: Core domain models and TransactionService
+LAB2: Add DAO interfaces, implementations and DBConnection for Customer, Account, Transaction, Loan, ProcessedRequest
+Merge feature/lab2-dao: DAO layer with JDBC PostgreSQL integration
+LAB3: Add custom exceptions, PaymentService, ReportService, JavaFX UI (HelloController, FXML, Main)
+Merge feature/lab3-services: Exceptions, PaymentService, ReportService and JavaFX UI
 ```
 
 ---
 
-# Git Commands Used
+## Git Commands Used
 
-## Create Branch
-
+### Create Branch
 ```bash
-git checkout -b feature/customer-management
+git checkout -b feature/lab1-models
 ```
 
-## Add Changes
-
+### Add Changes
 ```bash
 git add .
 ```
 
-## Commit Changes
-
+### Commit Changes
 ```bash
-git commit -m "Add customer registration functionality"
+git commit -m "LAB1: Add core domain models"
 ```
 
-## Push Branch
-
+### Push Branch
 ```bash
-git push origin feature/customer-management
+git push origin feature/lab1-models
 ```
 
-## Merge Branch
-
+### Merge Branch
 ```bash
 git checkout main
-git merge feature/customer-management
+git merge feature/lab1-models
 ```
 
 ---
 
-# Author
+## Author
 
 Igiraneza Irene
 
 ---
 
-# Repository Link
+## Repository Link
 
 https://github.com/ni-irene/IgirePayPaymentGatewayProject
