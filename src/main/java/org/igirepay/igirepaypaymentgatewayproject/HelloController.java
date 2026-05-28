@@ -60,7 +60,7 @@ public class HelloController implements Initializable {
 
     // Transfer
     @FXML private TextField transferToCustomerIdField, transferAmountField, transferRefField;
-    @FXML private Label transferMessage;
+    @FXML private Label transferMessage, transferRecipientLabel;
 
     // Savings
     @FXML private TextField savingsAmountField, savingsRefField;
@@ -186,6 +186,20 @@ public class HelloController implements Initializable {
         loginMessage.setText("");
     }
 
+    // ===================== VALIDATION HELPERS =====================
+
+    private boolean isValidPin(String pin) {
+        return pin.matches("\\d{5}");
+    }
+
+    private boolean isValidAmount(String text) {
+        try { return Double.parseDouble(text) > 0; } catch (Exception e) { return false; }
+    }
+
+    private boolean isValidId(String text) {
+        try { Integer.parseInt(text); return !text.isEmpty(); } catch (Exception e) { return false; }
+    }
+
     // ===================== CUSTOMER - DEPOSIT =====================
 
     @FXML
@@ -193,11 +207,23 @@ public class HelloController implements Initializable {
 
     @FXML
     public void onDeposit() {
+        String amountText = depAmountField.getText().trim();
+        String ref = depRefField.getText().trim();
+
+        if (amountText.isEmpty() || ref.isEmpty()) {
+            depMessage.setStyle("-fx-text-fill: red;");
+            depMessage.setText("Amount and Reference ID are required.");
+            return;
+        }
+        if (!isValidAmount(amountText)) {
+            depMessage.setStyle("-fx-text-fill: red;");
+            depMessage.setText("Amount must be a positive number.");
+            return;
+        }
         try {
             int walletId = getWalletId();
-            double amount = Double.parseDouble(depAmountField.getText().trim());
-            String ref = depRefField.getText().trim();
-            paymentService.deposit(walletId, amount, ref);
+            if (walletId == -1) { depMessage.setStyle("-fx-text-fill: red;"); depMessage.setText("You have no Wallet account."); return; }
+            paymentService.deposit(walletId, Double.parseDouble(amountText), ref);
             depMessage.setStyle("-fx-text-fill: green;");
             depMessage.setText("Deposit successful!");
             depAmountField.clear(); depRefField.clear();
@@ -215,11 +241,23 @@ public class HelloController implements Initializable {
 
     @FXML
     public void onWithdraw() {
+        String amountText = withAmountField.getText().trim();
+        String ref = withRefField.getText().trim();
+
+        if (amountText.isEmpty() || ref.isEmpty()) {
+            withMessage.setStyle("-fx-text-fill: red;");
+            withMessage.setText("Amount and Reference ID are required.");
+            return;
+        }
+        if (!isValidAmount(amountText)) {
+            withMessage.setStyle("-fx-text-fill: red;");
+            withMessage.setText("Amount must be a positive number.");
+            return;
+        }
         try {
             int walletId = getWalletId();
-            double amount = Double.parseDouble(withAmountField.getText().trim());
-            String ref = withRefField.getText().trim();
-            paymentService.withdraw(walletId, amount, ref);
+            if (walletId == -1) { withMessage.setStyle("-fx-text-fill: red;"); withMessage.setText("You have no Wallet account."); return; }
+            paymentService.withdraw(walletId, Double.parseDouble(amountText), ref);
             withMessage.setStyle("-fx-text-fill: green;");
             withMessage.setText("Withdrawal successful!");
             withAmountField.clear(); withRefField.clear();
@@ -236,22 +274,64 @@ public class HelloController implements Initializable {
     public void onGenTransferRef() { transferRefField.setText(generateRef()); }
 
     @FXML
+    public void onLookupRecipient() {
+        String idText = transferToCustomerIdField.getText().trim();
+        if (!isValidId(idText)) {
+            transferRecipientLabel.setStyle("-fx-text-fill: red;");
+            transferRecipientLabel.setText("Enter a valid Customer ID.");
+            return;
+        }
+        Customer recipient = customerDAO.getCustomerById(Integer.parseInt(idText));
+        if (recipient == null) {
+            transferRecipientLabel.setStyle("-fx-text-fill: red;");
+            transferRecipientLabel.setText("Recipient not found.");
+        } else {
+            transferRecipientLabel.setStyle("-fx-text-fill: #1a237e;");
+            transferRecipientLabel.setText("Recipient: " + recipient.getFullName() + " (" + recipient.getPhoneNumber() + ")");
+        }
+    }
+
+    @FXML
     public void onTransfer() {
+        String idText = transferToCustomerIdField.getText().trim();
+        String amountText = transferAmountField.getText().trim();
+        String ref = transferRefField.getText().trim();
+
+        if (idText.isEmpty() || amountText.isEmpty() || ref.isEmpty()) {
+            transferMessage.setStyle("-fx-text-fill: red;");
+            transferMessage.setText("All fields are required.");
+            return;
+        }
+        if (!isValidId(idText)) {
+            transferMessage.setStyle("-fx-text-fill: red;");
+            transferMessage.setText("Enter a valid Recipient Customer ID.");
+            return;
+        }
+        if (!isValidAmount(amountText)) {
+            transferMessage.setStyle("-fx-text-fill: red;");
+            transferMessage.setText("Amount must be a positive number.");
+            return;
+        }
         try {
             int fromWalletId = getWalletId();
-            int toCustomerId = Integer.parseInt(transferToCustomerIdField.getText().trim());
+            int toCustomerId = Integer.parseInt(idText);
+            if (toCustomerId == loggedInCustomer.getId()) {
+                transferMessage.setStyle("-fx-text-fill: red;");
+                transferMessage.setText("You cannot transfer to yourself.");
+                return;
+            }
             int toWalletId = accountDAO.getAccountIdByCustomerAndType(toCustomerId, "Wallet");
             if (toWalletId == -1) {
                 transferMessage.setStyle("-fx-text-fill: red;");
                 transferMessage.setText("Recipient has no Wallet account.");
                 return;
             }
-            double amount = Double.parseDouble(transferAmountField.getText().trim());
-            String ref = transferRefField.getText().trim();
-            paymentService.transfer(fromWalletId, toWalletId, amount, ref);
+            Customer recipient = customerDAO.getCustomerById(toCustomerId);
+            paymentService.transfer(fromWalletId, toWalletId, Double.parseDouble(amountText), ref);
             transferMessage.setStyle("-fx-text-fill: green;");
-            transferMessage.setText("Transfer successful!");
+            transferMessage.setText("Transfer to " + recipient.getFullName() + " successful!");
             transferToCustomerIdField.clear(); transferAmountField.clear(); transferRefField.clear();
+            transferRecipientLabel.setText("");
             loadCustomerData();
         } catch (Exception e) {
             transferMessage.setStyle("-fx-text-fill: red;");
@@ -266,38 +346,36 @@ public class HelloController implements Initializable {
 
     @FXML
     public void onPushToSavings() {
+        String amountText = savingsAmountField.getText().trim();
+        String ref = savingsRefField.getText().trim();
+        if (amountText.isEmpty() || ref.isEmpty()) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("Amount and Reference ID are required."); return; }
+        if (!isValidAmount(amountText)) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("Amount must be a positive number."); return; }
         try {
-            int walletId = getWalletId();
-            int savingsId = getSavingsId();
-            double amount = Double.parseDouble(savingsAmountField.getText().trim());
-            String ref = savingsRefField.getText().trim();
-            paymentService.pushToSavings(walletId, savingsId, amount, ref);
+            int walletId = getWalletId(); int savingsId = getSavingsId();
+            if (walletId == -1 || savingsId == -1) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("You need both Wallet and Savings accounts."); return; }
+            paymentService.pushToSavings(walletId, savingsId, Double.parseDouble(amountText), ref);
             savingsMessage.setStyle("-fx-text-fill: green;");
             savingsMessage.setText("Pushed to savings successfully!");
             savingsAmountField.clear(); savingsRefField.clear();
             loadCustomerData();
-        } catch (Exception e) {
-            savingsMessage.setStyle("-fx-text-fill: red;");
-            savingsMessage.setText("Error: " + e.getMessage());
-        }
+        } catch (Exception e) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("Error: " + e.getMessage()); }
     }
 
     @FXML
     public void onPullFromSavings() {
+        String amountText = savingsAmountField.getText().trim();
+        String ref = savingsRefField.getText().trim();
+        if (amountText.isEmpty() || ref.isEmpty()) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("Amount and Reference ID are required."); return; }
+        if (!isValidAmount(amountText)) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("Amount must be a positive number."); return; }
         try {
-            int walletId = getWalletId();
-            int savingsId = getSavingsId();
-            double amount = Double.parseDouble(savingsAmountField.getText().trim());
-            String ref = savingsRefField.getText().trim();
-            paymentService.pullFromSavings(savingsId, walletId, amount, ref);
+            int walletId = getWalletId(); int savingsId = getSavingsId();
+            if (walletId == -1 || savingsId == -1) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("You need both Wallet and Savings accounts."); return; }
+            paymentService.pullFromSavings(savingsId, walletId, Double.parseDouble(amountText), ref);
             savingsMessage.setStyle("-fx-text-fill: green;");
             savingsMessage.setText("Pulled from savings successfully!");
             savingsAmountField.clear(); savingsRefField.clear();
             loadCustomerData();
-        } catch (Exception e) {
-            savingsMessage.setStyle("-fx-text-fill: red;");
-            savingsMessage.setText("Error: " + e.getMessage());
-        }
+        } catch (Exception e) { savingsMessage.setStyle("-fx-text-fill: red;"); savingsMessage.setText("Error: " + e.getMessage()); }
     }
 
     // ===================== CUSTOMER - AIRTIME =====================
@@ -307,20 +385,20 @@ public class HelloController implements Initializable {
 
     @FXML
     public void onBuyAirtime() {
+        String phone = airtimePhoneField.getText().trim();
+        String amountText = airtimeAmountField.getText().trim();
+        String ref = airtimeRefField.getText().trim();
+        if (phone.isEmpty() || amountText.isEmpty() || ref.isEmpty()) { airtimeMessage.setStyle("-fx-text-fill: red;"); airtimeMessage.setText("All fields are required."); return; }
+        if (!isValidAmount(amountText)) { airtimeMessage.setStyle("-fx-text-fill: red;"); airtimeMessage.setText("Amount must be a positive number."); return; }
         try {
             int walletId = getWalletId();
-            String phone = airtimePhoneField.getText().trim();
-            double amount = Double.parseDouble(airtimeAmountField.getText().trim());
-            String ref = airtimeRefField.getText().trim();
-            paymentService.buyAirtime(walletId, amount, phone, ref);
+            if (walletId == -1) { airtimeMessage.setStyle("-fx-text-fill: red;"); airtimeMessage.setText("You have no Wallet account."); return; }
+            paymentService.buyAirtime(walletId, Double.parseDouble(amountText), phone, ref);
             airtimeMessage.setStyle("-fx-text-fill: green;");
             airtimeMessage.setText("Airtime purchased for " + phone + "!");
             airtimePhoneField.clear(); airtimeAmountField.clear(); airtimeRefField.clear();
             loadCustomerData();
-        } catch (Exception e) {
-            airtimeMessage.setStyle("-fx-text-fill: red;");
-            airtimeMessage.setText("Error: " + e.getMessage());
-        }
+        } catch (Exception e) { airtimeMessage.setStyle("-fx-text-fill: red;"); airtimeMessage.setText("Error: " + e.getMessage()); }
     }
 
     // ===================== CUSTOMER - LOAN =====================
@@ -394,12 +472,21 @@ public class HelloController implements Initializable {
         String current = custCurrentPinField.getText().trim();
         String newPin = custNewPinField.getText().trim();
 
+        if (current.isEmpty() || newPin.isEmpty()) {
+            custPinMessage.setStyle("-fx-text-fill: red;");
+            custPinMessage.setText("All fields are required.");
+            return;
+        }
+        if (!isValidPin(newPin)) {
+            custPinMessage.setStyle("-fx-text-fill: red;");
+            custPinMessage.setText("New PIN must be exactly 5 digits.");
+            return;
+        }
         if (!current.equals(loggedInCustomer.getPin())) {
             custPinMessage.setStyle("-fx-text-fill: red;");
             custPinMessage.setText("Incorrect current PIN.");
             return;
         }
-
         loggedInCustomer.setPin(newPin);
         customerDAO.updateCustomer(loggedInCustomer);
         custPinMessage.setStyle("-fx-text-fill: green;");
@@ -411,11 +498,23 @@ public class HelloController implements Initializable {
 
     @FXML
     public void onAdminRegisterCustomer() {
+        String name = adminCustNameField.getText().trim();
+        String pin  = adminCustPinField.getText().trim();
+        if (name.isEmpty() || pin.isEmpty()) {
+            adminCustMessage.setStyle("-fx-text-fill: red;");
+            adminCustMessage.setText("Full Name and PIN are required.");
+            return;
+        }
+        if (!isValidPin(pin)) {
+            adminCustMessage.setStyle("-fx-text-fill: red;");
+            adminCustMessage.setText("PIN must be exactly 5 digits.");
+            return;
+        }
         Customer c = new Customer();
-        c.setFullName(adminCustNameField.getText().trim());
+        c.setFullName(name);
         c.setEmail(adminCustEmailField.getText().trim());
         c.setPhoneNumber(adminCustPhoneField.getText().trim());
-        c.setPin(adminCustPinField.getText().trim());
+        c.setPin(pin);
         c.setRole(adminRoleCombo.getValue());
         customerDAO.addCustomer(c);
         adminCustMessage.setStyle("-fx-text-fill: green;");
