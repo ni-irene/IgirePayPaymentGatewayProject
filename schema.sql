@@ -1,7 +1,17 @@
--- IgirePay Payment Gateway — PostgreSQL Schema
--- Run once: psql -U postgres -d igirepay -f schema.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+-- IgirePay Payment Gateway — PostgreSQL Database Schema
+-- Author: Igiraneza Irene
+-- Description: Defines all tables for the IgirePay payment gateway system
+--              including customers, accounts, transactions, loans and
+--              duplicate request tracking.
+-- Usage: psql -U postgres -d igirepay -f schema.sql
+-- ─────────────────────────────────────────────────────────────────────────────
 
 -- ─── Customers ───────────────────────────────────────────────────────────────
+-- Stores all registered customers and admin users.
+-- role: 'customer' for regular users, 'admin' for administrators
+-- locked: set to TRUE after 3 failed PIN attempts
+-- failed_attempts: tracks consecutive failed login attempts
 CREATE TABLE customers (
     id               SERIAL PRIMARY KEY,
     full_name        VARCHAR(100)        NOT NULL,
@@ -15,6 +25,10 @@ CREATE TABLE customers (
 );
 
 -- ─── Accounts ────────────────────────────────────────────────────────────────
+-- Each customer can have two account types: Wallet and Savings.
+-- Wallet: used for daily transactions (deposit, withdraw, transfer, airtime)
+-- Savings: used for saving money and as collateral for loans
+-- customer_id: foreign key linking account to its owner (cascades on delete)
 CREATE TABLE accounts (
     id               SERIAL PRIMARY KEY,
     customer_id      INT                 NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
@@ -24,6 +38,11 @@ CREATE TABLE accounts (
 );
 
 -- ─── Transactions ─────────────────────────────────────────────────────────────
+-- Records every financial operation performed on an account.
+-- transaction_type examples: Deposit, Withdraw, Transfer-Out, Transfer-In,
+--                            Push-To-Savings, Pull-From-Savings, Airtime,
+--                            Loan-Disbursed, Loan-Repayment
+-- reference_id: unique identifier per transaction for idempotency checks
 CREATE TABLE transactions (
     id               SERIAL PRIMARY KEY,
     account_id       INT                 NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
@@ -33,7 +52,10 @@ CREATE TABLE transactions (
     created_at       TIMESTAMP           NOT NULL DEFAULT NOW()
 );
 
--- ─── Processed Requests (idempotency) ────────────────────────────────────────
+-- ─── Processed Requests (Idempotency) ────────────────────────────────────────
+-- Prevents duplicate transactions by storing all processed reference IDs.
+-- Before processing any transaction, the system checks this table.
+-- If the reference_id already exists, the transaction is rejected.
 CREATE TABLE processed_requests (
     id               SERIAL PRIMARY KEY,
     reference_id     VARCHAR(100)        NOT NULL UNIQUE,
@@ -41,6 +63,11 @@ CREATE TABLE processed_requests (
 );
 
 -- ─── Loans ───────────────────────────────────────────────────────────────────
+-- Tracks loans taken by customers against their savings account balance.
+-- loan_limit: maximum loan allowed (50% of savings balance at time of request)
+-- amount_paid: tracks repayments made so far
+-- status: ACTIVE (ongoing), PAID (fully repaid), OVERDUE (past due date)
+-- due_date: automatically set to 30 days from the date the loan was taken
 CREATE TABLE loans (
     id                  SERIAL PRIMARY KEY,
     customer_id         INT             NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
@@ -54,7 +81,10 @@ CREATE TABLE loans (
     due_date            TIMESTAMP       NOT NULL DEFAULT NOW() + INTERVAL '30 days'
 );
 
--- ─── Default admin account (PIN: 00000) ──────────────────────────────────────
+-- ─── Default Admin Account ───────────────────────────────────────────────────
+-- Creates a default admin user on first run.
+-- Login: Customer ID (auto-assigned), PIN: 00000
+-- Use this account to register customers and manage the system.
 INSERT INTO customers (full_name, email, phone_number, pin, role)
 VALUES ('Admin', 'admin@igirepay.com', '+250788000000', '00000', 'admin')
 ON CONFLICT DO NOTHING;
